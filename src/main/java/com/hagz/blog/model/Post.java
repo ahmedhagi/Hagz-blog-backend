@@ -25,7 +25,7 @@ public class Post {
     @NotBlank
     private String  title;
 
-    @Column(columnDefinition = "longtext")
+    @Column(columnDefinition = "TEXT")
     @NotEmpty
     private String content;
 
