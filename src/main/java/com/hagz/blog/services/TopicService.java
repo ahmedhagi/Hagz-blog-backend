@@ -53,7 +53,7 @@ public class TopicService {
     @Transactional
     public void addTags(String topicName, TagRequest tagRequest){
 
-        Topic topic = topicRepository.findByName(topicName)
+        Topic topic = topicRepository.findByNameIgnoreCase(topicName)
                 .orElseThrow(() -> new RuntimeException("Error: topic is not found."));;
 
         tagRequest.getTags().forEach( tagName -> {

@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public interface TopicRepository extends JpaRepository<Topic, Long> {
 
-    Optional<Topic> findByName(String name);
+    Optional<Topic> findByNameIgnoreCase(String name);
 
     /**
      * Returns List of tags of the selected topic
