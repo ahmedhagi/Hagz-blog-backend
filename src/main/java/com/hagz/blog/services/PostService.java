@@ -76,7 +76,7 @@ public class PostService {
     public List<Post> postsByTopic(String name) {
 
         Topic newTopic =  topicRepository.findByName(name)
-                .orElseThrow(() -> new RuntimeException("Error: topic is not found."));
+                .orElseThrow(() -> new RuntimeException("Error: topic " + name +  "is not found."));
 
         Long topicID= newTopic.getId();
 
