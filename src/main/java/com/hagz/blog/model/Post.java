@@ -45,9 +45,7 @@ public class Post {
     @NotBlank
     private String shortDesc;
 
-    @Lob
-    @Column(columnDefinition="bytea")
-    @Type(type = "org.hibernate.type.BinaryType")
+    @Column
     private byte[] imageURL;
 
     @Column
