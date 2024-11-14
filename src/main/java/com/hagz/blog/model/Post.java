@@ -1,5 +1,7 @@
 package com.hagz.blog.model;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.*;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -43,8 +45,10 @@ public class Post {
     @NotBlank
     private String shortDesc;
 
-    @Column
-    private String imageURL;
+    @Lob
+    @Column(columnDefinition="bytea")
+    @Type(type = "org.hibernate.type.BinaryType")
+    private byte[] imageURL;
 
     @Column
     @NotBlank
@@ -164,11 +168,11 @@ public class Post {
         this.shortDesc = shortDesc;
     }
 
-    public String getImageURL() {
+    public byte[] getImageURL() {
         return imageURL;
     }
 
-    public void setImageURL(String imageURL) {
+    public void setImageURL(byte[] imageURL) {
         this.imageURL = imageURL;
     }
 
