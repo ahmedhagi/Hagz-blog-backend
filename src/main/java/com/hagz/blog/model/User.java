@@ -1,6 +1,8 @@
 package com.hagz.blog.model;
 
 
+import org.hibernate.annotations.Type;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -40,8 +42,9 @@ public class User {
     @Column
     private String bio;
 
+
     @Column
-    private String imageURL;
+    private String imageUrl;
 
     /*Roles are obtain from the other tables within the database
      are represented as a set
@@ -109,12 +112,12 @@ public class User {
         this.bio = bio;
     }
 
-    public String getImageURL() {
-        return imageURL;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-    public void setImageURL(String imageURL) {
-        this.imageURL = imageURL;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }
 

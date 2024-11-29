@@ -6,13 +6,13 @@ public class UserRequest {
 
     private String bio;
 
-    private String imageURL;
+    private String imageUrl;
 
 
-    public UserRequest(String username, String bio, String imageURL) {
+    public UserRequest(String username, String bio, String imageUrl) {
         this.username = username;
         this.bio = bio;
-        this.imageURL = imageURL;
+        this.imageUrl = imageUrl;
     }
 
     public String getUsername() {
@@ -31,11 +31,11 @@ public class UserRequest {
         this.bio = bio;
     }
 
-    public String getImageURL() {
-        return imageURL;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-    public void setImageURL(String imageURL) {
-        this.imageURL = imageURL;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

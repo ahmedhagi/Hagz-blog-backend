@@ -10,6 +10,9 @@ import com.hagz.blog.security.services.UserDetailsImpl;
 import com.hagz.blog.utils.PostMapper;
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,24 +46,30 @@ public class PostService {
         return posts.stream().collect(Collectors.toList());
     }
 
+    //Get Post with Pagination
+    @Transactional
+    public Page<Post> getPostWithPagination(int offset, int pageSize) {
+        return postRepository.findAll(PageRequest.of(offset, pageSize).withSort(Sort.by(Sort.Direction.DESC, "id")));
+    }
+
     //gets post given a username
     @Transactional
-    public List<Post> postByUsername(String username) {
+    public Page<Post> postByUsername(String username , int offset, int pageSize) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Error: Username is not found."));
 
         String postUsername = user.getUsername();
 
-        List<Post> posts = postRepository.getPostByUsername(postUsername);
+        Page<Post> posts = postRepository.getPostByUsername(postUsername,PageRequest.of(offset, pageSize).withSort(Sort.by(Sort.Direction.DESC,"id")));
 
-        return posts.stream().collect(Collectors.toList());
+        return posts;
     }
 
 
 
     //gets post by tag given tag string
     @Transactional
-    public List<Post> postsByTag(String name) {
+    public Page<Post> postsByTag(String name, int offset, int pageSize) {
 
         Tag newTag =  tagRepository.findByName(name)
                 .orElseThrow(() -> new RuntimeException("Error: tag is not found."));
@@ -68,20 +77,20 @@ public class PostService {
         Long tagID= newTag.getId();
 
 
-        List<Post> posts = postRepository.getPostByTag(tagID);
-        return posts.stream().collect(Collectors.toList());
+        Page<Post> posts = postRepository.getPostByTag(tagID,PageRequest.of(offset, pageSize).withSort(Sort.by(Sort.Direction.DESC,"id")));
+        return posts;
     }
 
     @Transactional
-    public List<Post> postsByTopic(String name) {
+    public Page<Post> postsByTopic(String name , int offset, int pageSize) {
 
         Topic newTopic =  topicRepository.findByNameIgnoreCase(name)
                 .orElseThrow(() -> new RuntimeException("Error: topic " + name +  " is not found."));
 
         Long topicID= newTopic.getId();
 
-        List<Post> posts = postRepository.getPostByTopic(topicID);
-        return posts.stream().collect(Collectors.toList());
+        Page<Post> posts = postRepository.getPostByTopic(topicID,PageRequest.of(offset, pageSize).withSort(Sort.by(Sort.Direction.DESC,"id")));
+        return posts;
     }
 
     //create a post
@@ -100,6 +109,7 @@ public class PostService {
         }
 
         postMapper.postUserFromRequest(postRequest,post);
+
 
         //sets slug after title is mapped to post
         post.setSlug(post.getTitle().replace(" ","-").toLowerCase());
@@ -120,6 +130,13 @@ public class PostService {
                 .orElseThrow(() -> new RuntimeException("Error: post is not found."));
         return post;
     }
+
+    //Get all Post based on a certain field
+    @Transactional
+    public List<Post> sortBasedUponSomeField(String field) {
+        return postRepository.findAll(Sort.by(Sort.Direction.ASC, field));
+    }
+
 
     //Update Post
     @Transactional

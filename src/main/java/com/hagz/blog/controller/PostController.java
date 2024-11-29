@@ -6,6 +6,7 @@ import com.hagz.blog.payload.request.PostRequest;
 import com.hagz.blog.services.CommentService;
 import com.hagz.blog.services.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,43 +24,55 @@ public class PostController {
     @Autowired
     private CommentService commentService;
 
-    //Creates post
-    @PostMapping("/new_post")
-    public ResponseEntity createPost(@RequestBody PostRequest postRequest) {
-        Post post = postService.createPost(postRequest);
-        return new ResponseEntity(post, HttpStatus.OK);
-    }
-
     //shows all posts
     @GetMapping("/all")
     public ResponseEntity<List<Post>> showAllPosts() {
         return new ResponseEntity<>(postService.showAll(), HttpStatus.OK);
     }
 
+
+    @ResponseBody
+    @GetMapping( value = "/get/pagination/{offset}/{pageSize}/")
+    public ResponseEntity<Page<Post>> getPostsWithPagination(@PathVariable int offset, @PathVariable int pageSize) {
+        Page<Post> posts = postService.getPostWithPagination(offset,pageSize);
+        return new ResponseEntity<>(posts, HttpStatus.OK);
+    }
+
     //Get All Posts with topic
    @ResponseBody
-    @GetMapping(value = "/get/topic/{name}")
-    public ResponseEntity<List<Post>> getPostsByTopic(@PathVariable("name") String name) {
+    @GetMapping(value = "/get/topic/{offset}/{pageSize}/{name}")
+    public ResponseEntity<Page<Post>> getPostsByTopic(
+            @PathVariable("name") String name,
+            @PathVariable int offset,
+            @PathVariable int pageSize) {
 
-        return new ResponseEntity<>(postService.postsByTopic(name), HttpStatus.OK);
+        return new ResponseEntity<>(postService.postsByTopic(name,offset,pageSize), HttpStatus.OK);
 
     }
 
     //Gets all Posts with username
     @ResponseBody
-    @GetMapping(value = "/get/username/{username}")
-    public ResponseEntity<List<Post>> getPostsByUsername(@PathVariable("username") String username) {
+    @GetMapping(value = "/get/username/{offset}/{pageSize}/{username}")
+    public ResponseEntity<Page<Post>> getPostsByUsername(
+            @PathVariable("username") String username,
+            @PathVariable int offset,
+            @PathVariable int pageSize
+            ) {
 
-        return new ResponseEntity<>(postService.postByUsername(username), HttpStatus.OK);
+        return new ResponseEntity<>(postService.postByUsername(username,offset,pageSize), HttpStatus.OK);
 
     }
 
     //Gets all Posts with Tag id
     @ResponseBody
-    @GetMapping(value = "/get/tag/{tag}")
-    public ResponseEntity<List<Post>>  getPostsByTag(@PathVariable("tag") String tagName) {
+    @GetMapping(value = "/get/tag/{offset}/{pageSize}/{tag}")
+    public ResponseEntity<Page<Post>>  getPostsByTag(
+            @PathVariable("tag") String tagName,
+            @PathVariable int offset,
+            @PathVariable int pageSize
+    ) {
 
-        return new ResponseEntity<>(postService.postsByTag(tagName), HttpStatus.OK);
+        return new ResponseEntity<>(postService.postsByTag(tagName,offset,pageSize), HttpStatus.OK);
 
     }
 
@@ -70,6 +83,14 @@ public class PostController {
         long new_id = Long.valueOf(id);
         return new ResponseEntity<>(postService.getPost(new_id), HttpStatus.OK);
 
+    }
+
+
+    //Creates post
+    @PostMapping("/new_post")
+    public ResponseEntity createPost(@RequestBody PostRequest postRequest) {
+        Post post = postService.createPost(postRequest);
+        return new ResponseEntity(post, HttpStatus.OK);
     }
 
     // Updates a Post

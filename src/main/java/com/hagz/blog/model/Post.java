@@ -45,10 +45,8 @@ public class Post {
     @NotBlank
     private String shortDesc;
 
-    @Lob
-    @Column(name="imageUrl")
-    @Type(type="org.hibernate.type.BinaryType")
-    private byte[] imageUrl;
+    @Column
+    private String imageUrl;
 
     @Column
     @NotBlank
@@ -168,12 +166,12 @@ public class Post {
         this.shortDesc = shortDesc;
     }
 
-    public byte[] getImageUrl() {
+    public String getImageUrl() {
         return imageUrl;
     }
 
-    public void setImageURL(byte[] imageURL) {
-        this.imageUrl = imageURL;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public String getSlug() {

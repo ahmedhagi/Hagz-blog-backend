@@ -20,11 +20,11 @@ public class PostRequest {
 
     private String shortDesc;
 
-    private byte[] imageUrl;
+    private String imageUrl;
 
     private Set<Tag> tags;
 
-    public PostRequest(String title, String content, List<Tag> tags, Topic topic, String shortDesc, byte[] imageUrl) {
+    public PostRequest(String title, String content, List<Tag> tags, Topic topic, String shortDesc, String imageUrl) {
         this.title = title;
         this.content = content;
         this.topic = topic;
@@ -46,11 +46,11 @@ public class PostRequest {
         this.shortDesc = shortDesc;
     }
 
-    public byte[] getImageUrl() {
+    public String getImageUrl() {
         return imageUrl;
     }
 
-    public void setImageUrl(byte[] imageUrl) {
+    public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
 
