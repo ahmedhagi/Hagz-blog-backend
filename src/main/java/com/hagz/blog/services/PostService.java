@@ -49,7 +49,7 @@ public class PostService {
     //Get Post with Pagination
     @Transactional
     public Page<Post> getPostWithPagination(int offset, int pageSize) {
-        return postRepository.findAll(PageRequest.of(offset, pageSize).withSort(Sort.by(Sort.Direction.DESC, "id")));
+        return postRepository.findAll(PageRequest.of(offset, pageSize).withSort(Sort.by(Sort.Direction.DESC, "createdOn")));
     }
 
     //gets post given a username
@@ -60,7 +60,7 @@ public class PostService {
 
         String postUsername = user.getUsername();
 
-        Page<Post> posts = postRepository.getPostByUsername(postUsername,PageRequest.of(offset, pageSize).withSort(Sort.by(Sort.Direction.DESC,"id")));
+        Page<Post> posts = postRepository.getPostByUsername(postUsername,PageRequest.of(offset, pageSize).withSort(Sort.by(Sort.Direction.DESC,"createdOn")));
 
         return posts;
     }
@@ -77,7 +77,7 @@ public class PostService {
         Long tagID= newTag.getId();
 
 
-        Page<Post> posts = postRepository.getPostByTag(tagID,PageRequest.of(offset, pageSize).withSort(Sort.by(Sort.Direction.DESC,"id")));
+        Page<Post> posts = postRepository.getPostByTag(tagID,PageRequest.of(offset, pageSize).withSort(Sort.by(Sort.Direction.DESC,"createdOn")));
         return posts;
     }
 
@@ -89,7 +89,7 @@ public class PostService {
 
         Long topicID= newTopic.getId();
 
-        Page<Post> posts = postRepository.getPostByTopic(topicID,PageRequest.of(offset, pageSize).withSort(Sort.by(Sort.Direction.DESC,"id")));
+        Page<Post> posts = postRepository.getPostByTopic(topicID,PageRequest.of(offset, pageSize).withSort(Sort.by(Sort.Direction.DESC,"createdOn")));
         return posts;
     }
 
