@@ -3,6 +3,9 @@ package com.hagz.blog.payload.request;
 import java.util.List;
 
 public class TagRequest {
+    public TagRequest(List<String> tags) {
+        this.tags = tags;
+    }
 
     private List<String> tags;
 

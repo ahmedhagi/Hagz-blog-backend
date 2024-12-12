@@ -1,8 +1,7 @@
 package com.hagz.blog.controller;
 
 import com.hagz.blog.model.Post;
-import com.hagz.blog.payload.request.CommentRequest;
-import com.hagz.blog.payload.request.PostRequest;
+import com.hagz.blog.payload.request.PostBodyRequest;
 import com.hagz.blog.services.CommentService;
 import com.hagz.blog.services.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,18 +87,18 @@ public class PostController {
 
     //Creates post
     @PostMapping("/new_post")
-    public ResponseEntity createPost(@RequestBody PostRequest postRequest) {
-        Post post = postService.createPost(postRequest);
+    public ResponseEntity createPost(@RequestBody PostBodyRequest postBodyRequest) {
+        Post post = postService.createPost(postBodyRequest);
         return new ResponseEntity(post, HttpStatus.OK);
     }
 
     // Updates a Post
     @ResponseBody
     @PutMapping(value="/update/{id}")
-    public ResponseEntity updatePost(@PathVariable("id") String id, @RequestBody PostRequest postrequest) {
+    public ResponseEntity updatePost(@PathVariable("id") String id, @RequestBody PostBodyRequest postBodyRequest) {
         long post_id = Long.valueOf(id);
 
-        return new ResponseEntity(postService.updatePost(post_id, postrequest),HttpStatus.OK);
+        return new ResponseEntity(postService.updatePost(post_id, postBodyRequest),HttpStatus.OK);
     }
 
     // Delete post

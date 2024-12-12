@@ -1,7 +1,7 @@
 package com.hagz.blog.services;
 
 import com.hagz.blog.model.*;
-import com.hagz.blog.payload.request.PostRequest;
+import com.hagz.blog.payload.request.PostBodyRequest;
 import com.hagz.blog.repository.PostRepository;
 import com.hagz.blog.repository.TagRepository;
 import com.hagz.blog.repository.TopicRepository;
@@ -88,14 +88,14 @@ public class PostService {
                 .orElseThrow(() -> new RuntimeException("Error: topic " + name +  " is not found."));
 
         Long topicID= newTopic.getId();
-
         Page<Post> posts = postRepository.getPostByTopic(topicID,PageRequest.of(offset, pageSize).withSort(Sort.by(Sort.Direction.DESC,"createdOn")));
         return posts;
     }
 
+
     //create a post
     @Transactional
-    public Post createPost(PostRequest postRequest) {
+    public Post createPost(PostBodyRequest postBodyRequest) {
         Post post = new Post();
 
         //sets Username
@@ -108,7 +108,8 @@ public class PostService {
             throw new IllegalArgumentException("User not login");
         }
 
-        postMapper.postUserFromRequest(postRequest,post);
+       //map postBodyRequest to post
+        postMapper.postUserFromRequest(postBodyRequest,post);
 
 
         //sets slug after title is mapped to post
@@ -140,10 +141,12 @@ public class PostService {
 
     //Update Post
     @Transactional
-    public Post updatePost(long ID, PostRequest postRequest ){
+    public Post updatePost(long ID, PostBodyRequest postBodyRequest ){
 
         Post post = postRepository.findById(ID).orElseThrow(() -> new RuntimeException("Error: Post is not found."));
-        postMapper.postUserFromRequest(postRequest,post);
+
+        //Maps fields to post
+        postMapper.postUserFromRequest(postBodyRequest,post);
 
         //Updates other variables
         post.setUpdatedOn(Instant.now());
