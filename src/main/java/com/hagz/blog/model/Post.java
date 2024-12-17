@@ -66,14 +66,8 @@ public class Post {
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private Set<Tag> tags = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.LAZY,
-            cascade = {
-                    CascadeType.MERGE
-            }
-    )
-    @JoinTable(	name = "post_comments",
-            joinColumns = @JoinColumn(name = "post_id"),
-            inverseJoinColumns = @JoinColumn(name = "comment_id"))
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @JoinColumn(name = "post_id")
     private Set<Comment> comments = new HashSet<>();
 
     //Topic
