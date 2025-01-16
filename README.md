@@ -59,27 +59,30 @@ https://localhost:8000/api/
 Specific endpoints require Request Bodies
 
 ### SignupRequest:
-
-'{
+```
+{
     "username":"valid and unique string",
     "email":"valid email string",
     "password":"valid string",
     "role": ["names of roles ex. "user"]
-}'
+}
+```
 
 ### SignInRequest:
-
-'{
+```
+{
     "username" : "registered username",
     "password" : "password associated with registered user"
-}'
+}
+```
 
 ### PostRequest:
 
-*For the topicName field it's best to run the 'GET api/topics/all' endpoint to find a valid topic name
-*Similarally For the tagSet field it's best to run the 'GET api/topics/all/tags/:topicName' endpoint to find a valid tag names
+* For the topicName field it's best to run the 'GET api/topics/all' endpoint to find a valid topic name
+* Similarally For the tagSet field it's best to run the 'GET api/topics/all/tags/:topicName' endpoint to find a valid tag names
 
-'{
+```
+{
     "title" : "valid string",
     "content" : "valid string",
     "topicName": "vaild topic name",
@@ -87,30 +90,43 @@ Specific endpoints require Request Bodies
     "imageUrl" : "valid string",
     "tagSet": [ subset of valid tag names]
     
-}'
+}
+```
 
 ### CommentRequest:
 
+```
 {
 	content : "valid string"
 }
+```
 
 ### TopicRequest:
 
+```
 {
 	name : "valid string"
 }
+```
 
-### TagRequest: {
+### TagRequest: 
+
+```
+{
 	
 	tags:["list of valid tag names"]
 }
+```
 
-### UserRequest: {
+### UserRequest: 
+
+```
+{
 	"username":"register username",
 	"bio":"valid string"
     "imageURL":"valid string"
 }
+```
 
 
 ## API Endpoints
@@ -118,40 +134,40 @@ Specific endpoints require Request Bodies
 Some requests require authorization in the form of Bearer token. This token can be obtained by envoking the 'POST /api/auth/signup' endpoint from the response body.
 
 ### Auth
-* 'POST /api/auth/signin': Register a new user (SignUpRequest required)
-* 'POST /api/auth/signup': Logs in user (LoginRequest required)
+* `POST /api/auth/signin`: Register a new user (SignUpRequest required)
+* `POST /api/auth/signup`: Logs in user (LoginRequest required)
 
 
 ### Post
-* 'GET /api/posts/all': Gets all posts
-* 'GET /api/posts/:id': Gets post by post id
-* 'GET /api/posts//api/posts/get/pagination/:offset/:pageSize/': Gets page of all posts based off the offset and pageSize
-* 'GET /api/posts//api/posts/get/username/:offset/:pageSize/:username': Gets page of all posts based off the username, offset and pageSize
-* 'GET /api/posts//api/posts/get/topic/:offset/:pageSize/:topic': Gets page of all posts based off the topic name, offset and pageSize
-* 'GET /api/posts//api/posts/get/tag/:offset/:pageSize/:tag': Gets page of all posts based off the tag name, offset and pageSize
-* 'POST /api/posts/new_post': Creates new post (PostRequest required) (Authorization Bearer token required)
-* 'PUT /api/posts/update/:id': Updates post based on a given post id (fields from PostRequest required) (Authorization Bearer token required)
-* 'DELETE /api/posts/delete/1': Deletes post base on a given post id (Authorization Bearer token required)
+* `GET /api/posts/all`: Gets all posts
+* `GET /api/posts/:id`: Gets post by post id
+* `GET /api/posts//api/posts/get/pagination/:offset/:pageSize/`: Gets page of all posts based off the offset and pageSize
+* `GET /api/posts//api/posts/get/username/:offset/:pageSize/:username`: Gets page of all posts based off the username, offset and pageSize
+* `GET /api/posts//api/posts/get/topic/:offset/:pageSize/:topic`: Gets page of all posts based off the topic name, offset and pageSize
+* `GET /api/posts//api/posts/get/tag/:offset/:pageSize/:tag`: Gets page of all posts based off the tag name, offset and pageSize
+* `POST /api/posts/new_post`: Creates new post (PostRequest required) (Authorization Bearer token required)
+* `PUT /api/posts/update/:id`: Updates post based on a given post id (fields from PostRequest required) (Authorization Bearer token required)
+* `DELETE /api/posts/delete/:id`: Deletes post base on a given post id (Authorization Bearer token required)
 
 
 #### Comment
-* 'GET /api/comment/get/:id': Gets comment based on the comment id
-* 'POST /api/comment/:id/comment': Adds comment to post given post id (CommentRequest required) (Authorization Bearer token required)
-* 'PUT /api/comment/:id/update': Updates comment based on the comment id (Authorization Bearer token required)
-* 'DELETE /api/comment/:id/delete':  Deletes comment based on the comment id (Authorization Bearer token required)
+* `GET /api/comment/get/:id`: Gets comment based on the comment id
+* `POST /api/comment/:id/comment`: Adds comment to post given post id (CommentRequest required) (Authorization Bearer token required)
+* `PUT /api/comment/:id/update`: Updates comment based on the comment id (Authorization Bearer token required)
+* `DELETE /api/comment/:id/delete`:  Deletes comment based on the comment id (Authorization Bearer token required)
 
 #### Topic
-* 'GET api/topics/all: Gets all topics
-* 'GET api/topics/all/tags/:topic: Gets all tags based on the topic name
-* 'POST /api/topics/create': Create a new topic (TopicRequest required) (Authorization Bearer token required)
-* 'POST /api/topics/add/:topic': Adds tags to topic based on the topic name (TagRequest required) (Authorization Bearer token required)
+* `GET api/topics/all`: Gets all topics
+* `GET api/topics/all/tags/:topic`: Gets all tags based on the topic name
+* `POST /api/topics/create`: Create a new topic (TopicRequest required) (Authorization Bearer token required)
+* `POST /api/topics/add/:topic`: Adds tags to topic based on the topic name (TagRequest required) (Authorization Bearer token required)
 
 #### Tag
-* 'POST /api/tags/': Create new tags ('TagRequest required') (Authorization Bearer token required)
+* `POST /api/tags/`: Create new tags ('TagRequest required') (Authorization Bearer token required)
 
 #### User
-* 'GET /api/user/get/:username': Gets user info given a username
-* 'PUT /api/user/update': Updates user info ('UserRequest required') (Authorization Bearer token required) 
+* `GET /api/user/get/:username`: Gets user info given a username
+* `PUT /api/user/update`: Updates user info ('UserRequest required') (Authorization Bearer token required) 
 
 ## Contributing
 
