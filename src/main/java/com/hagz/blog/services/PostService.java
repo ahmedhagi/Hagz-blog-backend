@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 public class PostService {
@@ -167,14 +168,16 @@ public class PostService {
 
         List<Post> relatedPosts = postRepository.findPostsWithAssociationsByIds(postIds);
 
-        // Maintain the order from step 1
-        relatedPosts.sort((a, b) -> {
-            int indexA = postIds.indexOf(a.getId());
-            int indexB = postIds.indexOf(b.getId());
-            return Integer.compare(indexA, indexB);
-        });
+        // Step 3: Remove duplicates caused by JOIN FETCH (preserves first occurrence)
+        List<Post> uniquePosts = new ArrayList<>(new LinkedHashSet<>(relatedPosts));
 
-        return postResponseMapper.postsToPostDtos(relatedPosts);
+        // Step 4: Maintain the order from step 1
+        Map<Long, Integer> orderMap = IntStream.range(0, postIds.size())
+                .boxed()
+                .collect(Collectors.toMap(postIds::get, i -> i));
+
+        uniquePosts.sort(Comparator.comparing(p -> orderMap.getOrDefault(p.getId(), Integer.MAX_VALUE)));
+
+        return postResponseMapper.postsToPostDtos(uniquePosts);
     }
-
 }
