@@ -2,12 +2,15 @@ package com.hagz.blog.services;
 
 import com.hagz.blog.model.*;
 import com.hagz.blog.payload.request.PostBodyRequest;
+import com.hagz.blog.payload.response.PostCardDTO;
+import com.hagz.blog.payload.response.PostDto;
 import com.hagz.blog.repository.PostRepository;
 import com.hagz.blog.repository.TagRepository;
 import com.hagz.blog.repository.TopicRepository;
 import com.hagz.blog.repository.UserRepository;
 import com.hagz.blog.security.services.UserDetailsImpl;
 import com.hagz.blog.utils.PostMapper;
+import com.hagz.blog.utils.PostResponseMapper;
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -38,6 +41,9 @@ public class PostService {
     @Autowired
     private PostMapper postMapper;
 
+    @Autowired
+    private PostResponseMapper postResponseMapper;
+
     //show all posts
     @Transactional
     public List<Post> showAll() {
@@ -47,51 +53,22 @@ public class PostService {
     }
 
     //Get Post with Pagination
-    @Transactional
-    public Page<Post> getPostWithPagination(int offset, int pageSize) {
-        return postRepository.findAll(PageRequest.of(offset, pageSize).withSort(Sort.by(Sort.Direction.DESC, "createdOn")));
+    @Transactional(readOnly = true)
+    public Page<PostCardDTO> getPostCardsWithPagination(int offset, int pageSize) {
+        return postRepository.findPostCards(
+                PageRequest.of(offset, pageSize)
+        );
     }
 
-    //gets post given a username
-    @Transactional
-    public Page<Post> postByUsername(String username , int offset, int pageSize) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Error: Username is not found."));
-
-        String postUsername = user.getUsername();
-
-        Page<Post> posts = postRepository.getPostByUsername(postUsername,PageRequest.of(offset, pageSize).withSort(Sort.by(Sort.Direction.DESC,"createdOn")));
-
-        return posts;
+    //Get Post with Filters
+    public Page<PostCardDTO> getPostCardsWithFilters(
+            String username, String topicName, String tagName,
+            int offset, int pageSize) {
+        return postRepository.findPostCardsWithFilters(
+                username, topicName, tagName,
+                PageRequest.of(offset, pageSize)
+        );
     }
-
-
-
-    //gets post by tag given tag string
-    @Transactional
-    public Page<Post> postsByTag(String name, int offset, int pageSize) {
-
-        Tag newTag =  tagRepository.findByName(name)
-                .orElseThrow(() -> new RuntimeException("Error: tag is not found."));
-
-        Long tagID= newTag.getId();
-
-
-        Page<Post> posts = postRepository.getPostByTag(tagID,PageRequest.of(offset, pageSize).withSort(Sort.by(Sort.Direction.DESC,"createdOn")));
-        return posts;
-    }
-
-    @Transactional
-    public Page<Post> postsByTopic(String name , int offset, int pageSize) {
-
-        Topic newTopic =  topicRepository.findByNameIgnoreCase(name)
-                .orElseThrow(() -> new RuntimeException("Error: topic " + name +  " is not found."));
-
-        Long topicID= newTopic.getId();
-        Page<Post> posts = postRepository.getPostByTopic(topicID,PageRequest.of(offset, pageSize).withSort(Sort.by(Sort.Direction.DESC,"createdOn")));
-        return posts;
-    }
-
 
     //create a post
     @Transactional
@@ -128,7 +105,7 @@ public class PostService {
     @Transactional
     public Post getPost(long ID) {
         Post post = postRepository.findById(ID)
-                .orElseThrow(() -> new RuntimeException("Error: post is not found."));
+                .orElseThrow(() -> new RuntimeException("Error: post " + ID + " is not found."));
         return post;
     }
 
@@ -167,6 +144,37 @@ public class PostService {
         Hibernate.initialize(post.getTags());
         Hibernate.initialize(post.getComments());
        return post;
+    }
+
+
+
+    /**
+     * Find related posts based on shared tags.
+     * Uses MapStruct mapper to convert entities to DTOs.
+     */
+    @Transactional(readOnly = true)
+    public List<PostDto> findRelatedPosts(Long postId, int limit) {
+        // Step 1: Get related post IDs sorted by relevance
+        List<Long> postIds = postRepository.findRelatedPostIdsByTags(
+                postId,
+                PageRequest.of(0, limit)
+        );
+
+        // Step 2: Fetch full posts with all associations if there are results
+        if (postIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<Post> relatedPosts = postRepository.findPostsWithAssociationsByIds(postIds);
+
+        // Maintain the order from step 1
+        relatedPosts.sort((a, b) -> {
+            int indexA = postIds.indexOf(a.getId());
+            int indexB = postIds.indexOf(b.getId());
+            return Integer.compare(indexA, indexB);
+        });
+
+        return postResponseMapper.postsToPostDtos(relatedPosts);
     }
 
 }

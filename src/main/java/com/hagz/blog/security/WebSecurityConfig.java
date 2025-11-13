@@ -96,6 +96,7 @@ public class WebSecurityConfig  {
                         .antMatchers("/api/auth/**").permitAll()
                         .antMatchers("/api/test/**").permitAll()
                         .antMatchers("/api/posts/all").permitAll()
+                        .antMatchers("/post/**").permitAll()
                         .antMatchers("/api/tags/**").permitAll()
                         .antMatchers("/api/topics/all/**").permitAll()
                         .antMatchers("/api/posts/get/**").permitAll()

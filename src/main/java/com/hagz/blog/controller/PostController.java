@@ -2,12 +2,15 @@ package com.hagz.blog.controller;
 
 import com.hagz.blog.model.Post;
 import com.hagz.blog.payload.request.PostBodyRequest;
+import com.hagz.blog.payload.response.PostCardDTO;
+import com.hagz.blog.payload.response.PostDto;
 import com.hagz.blog.services.CommentService;
 import com.hagz.blog.services.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,58 +33,44 @@ public class PostController {
     }
 
 
+    @GetMapping("/get/pagination/{offset}/{pageSize}/")
     @ResponseBody
-    @GetMapping( value = "/get/pagination/{offset}/{pageSize}/")
-    public ResponseEntity<Page<Post>> getPostsWithPagination(@PathVariable int offset, @PathVariable int pageSize) {
-        Page<Post> posts = postService.getPostWithPagination(offset,pageSize);
-        return new ResponseEntity<>(posts, HttpStatus.OK);
-    }
-
-    //Get All Posts with topic
-   @ResponseBody
-    @GetMapping(value = "/get/topic/{offset}/{pageSize}/{name}")
-    public ResponseEntity<Page<Post>> getPostsByTopic(
-            @PathVariable("name") String name,
+    public ResponseEntity<Page<PostCardDTO>> getPostCardsWithPagination(
             @PathVariable int offset,
             @PathVariable int pageSize) {
-
-        return new ResponseEntity<>(postService.postsByTopic(name,offset,pageSize), HttpStatus.OK);
-
+        Page<PostCardDTO> postCards = postService.getPostCardsWithPagination(offset, pageSize);
+        return ResponseEntity.ok(postCards);
     }
 
-    //Gets all Posts with username
-    @ResponseBody
-    @GetMapping(value = "/get/username/{offset}/{pageSize}/{username}")
-    public ResponseEntity<Page<Post>> getPostsByUsername(
-            @PathVariable("username") String username,
+    @GetMapping("/get/pagination/{offset}/{pageSize}")
+    public ResponseEntity<Page<PostCardDTO>> getPostCardsWithFilters(
             @PathVariable int offset,
-            @PathVariable int pageSize
-            ) {
+            @PathVariable int pageSize,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String topicName,
+            @RequestParam(required = false) String tagName) {
 
-        return new ResponseEntity<>(postService.postByUsername(username,offset,pageSize), HttpStatus.OK);
-
-    }
-
-    //Gets all Posts with Tag id
-    @ResponseBody
-    @GetMapping(value = "/get/tag/{offset}/{pageSize}/{tag}")
-    public ResponseEntity<Page<Post>>  getPostsByTag(
-            @PathVariable("tag") String tagName,
-            @PathVariable int offset,
-            @PathVariable int pageSize
-    ) {
-
-        return new ResponseEntity<>(postService.postsByTag(tagName,offset,pageSize), HttpStatus.OK);
-
+        Page<PostCardDTO> postCards = postService.getPostCardsWithFilters(
+                username, topicName, tagName, offset, pageSize
+        );
+        return ResponseEntity.ok(postCards);
     }
 
     //gets post with post id
     @ResponseBody
-    @GetMapping(value = "/get/{id}")
+    @GetMapping(value = "/get/{id}/**")
     public ResponseEntity<Post> getPost(@PathVariable("id") String id) {
-        long new_id = Long.valueOf(id);
+        long new_id = Long.parseLong(id);
         return new ResponseEntity<>(postService.getPost(new_id), HttpStatus.OK);
 
+    }
+
+    @GetMapping("/get/{postId}/related")
+    public ResponseEntity<List<PostDto>> getRelatedPosts(
+            @PathVariable Long postId,
+            @RequestParam(defaultValue = "5") int limit) {
+        List<PostDto> relatedPosts = postService.findRelatedPosts(postId, limit);
+        return ResponseEntity.ok(relatedPosts);
     }
 
 
