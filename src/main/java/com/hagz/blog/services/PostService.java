@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -147,37 +148,119 @@ public class PostService {
        return post;
     }
 
-
-
     /**
-     * Find related posts based on shared tags.
+     * Find related posts based on shared tags with fallback mechanisms.
      * Uses MapStruct mapper to convert entities to DTOs.
+     *
+     * Priority order:
+     * 1. Posts sharing the most tags with the given post
+     * 2. Posts in the same topic (if limit not reached)
+     * 3. Recent posts (if limit still not reached)
      */
     @Transactional(readOnly = true)
     public List<PostDto> findRelatedPosts(Long postId, int limit) {
-        // Step 1: Get related post IDs sorted by relevance
-        List<Long> postIds = postRepository.findRelatedPostIdsByTags(
-                postId,
-                PageRequest.of(0, limit)
-        );
+        Set<Long> collectedIds = new LinkedHashSet<>();
+        List<Long> excludeIds = new ArrayList<>();
+        excludeIds.add(postId);
 
-        // Step 2: Fetch full posts with all associations if there are results
-        if (postIds.isEmpty()) {
+        // Collect related posts by priority: tags -> topic -> recent
+        collectTagRelatedPosts(postId, limit, collectedIds, excludeIds);
+        collectFallbackPosts(postId, limit, collectedIds, excludeIds, this::fetchTopicRelatedIds);
+        collectFallbackPosts(postId, limit, collectedIds, excludeIds, this::fetchRecentIds);
+
+        if (collectedIds.isEmpty()) {
             return List.of();
         }
 
-        List<Post> relatedPosts = postRepository.findPostsWithAssociationsByIds(postIds);
+        List<Post> sortedPosts = fetchAndSortPosts(collectedIds);
+        return postResponseMapper.postsToPostDtos(sortedPosts);
+    }
 
-        // Step 3: Remove duplicates caused by JOIN FETCH (preserves first occurrence)
-        List<Post> uniquePosts = new ArrayList<>(new LinkedHashSet<>(relatedPosts));
+    /**
+     * Collect post IDs related by shared tags.
+     * Primary method for finding related content.
+     */
+    private void collectTagRelatedPosts(Long postId,
+                                        int limit,
+                                        Set<Long> collectedIds,
+                                        List<Long> excludeIds) {
+        List<Long> tagRelatedIds = postRepository.findRelatedPostIdsByTags(
+                postId,
+                PageRequest.of(0, limit)
+        );
+        collectedIds.addAll(tagRelatedIds);
+        excludeIds.addAll(tagRelatedIds);
+    }
 
-        // Step 4: Maintain the order from step 1
-        Map<Long, Integer> orderMap = IntStream.range(0, postIds.size())
+    /**
+     * Collect fallback post IDs using the provided fetcher function.
+     * Only executes if the current collection hasn't reached the limit.
+     */
+    private void collectFallbackPosts(Long postId,
+                                      int limit,
+                                      Set<Long> collectedIds,
+                                      List<Long> excludeIds,
+                                      FallbackIdFetcher fetcher) {
+        if (collectedIds.size() >= limit) {
+            return;
+        }
+
+        int remaining = limit - collectedIds.size();
+        List<Long> fallbackIds = fetcher.fetch(postId, excludeIds, remaining);
+        collectedIds.addAll(fallbackIds);
+        excludeIds.addAll(fallbackIds);
+    }
+
+    /**
+     * Fetch topic-related post IDs excluding already collected posts.
+     */
+    private List<Long> fetchTopicRelatedIds(Long postId, List<Long> excludeIds, int limit) {
+        return postRepository.findRelatedPostIdsByTopicExcluding(
+                postId,
+                excludeIds,
+                PageRequest.of(0, limit)
+        );
+    }
+
+    /**
+     * Fetch recent post IDs excluding already collected posts.
+     */
+    private List<Long> fetchRecentIds(Long postId, List<Long> excludeIds, int limit) {
+        return postRepository.findRecentPostIdsExcluding(
+                excludeIds,
+                PageRequest.of(0, limit)
+        );
+    }
+
+    /**
+     * Fetch full post entities and sort them by collection order.
+     * Removes duplicates caused by JOIN FETCH while preserving order.
+     */
+    private List<Post> fetchAndSortPosts(Set<Long> collectedIds) {
+        List<Long> orderedIds = new ArrayList<>(collectedIds);
+        List<Post> posts = postRepository.findPostsWithAssociationsByIds(orderedIds);
+
+        // Remove duplicates caused by JOIN FETCH
+        List<Post> uniquePosts = new ArrayList<>(new LinkedHashSet<>(posts));
+
+        // Sort by original collection order
+        Map<Long, Integer> orderMap = IntStream.range(0, orderedIds.size())
                 .boxed()
-                .collect(Collectors.toMap(postIds::get, i -> i));
+                .collect(Collectors.toMap(orderedIds::get, i -> i));
 
         uniquePosts.sort(Comparator.comparing(p -> orderMap.getOrDefault(p.getId(), Integer.MAX_VALUE)));
 
-        return postResponseMapper.postsToPostDtos(uniquePosts);
+        return uniquePosts;
     }
+
+    /**
+     * Functional interface for fallback ID fetching strategies.
+     * Enables reusable collection logic across different fallback methods.
+     */
+    @FunctionalInterface
+    private interface FallbackIdFetcher {
+        List<Long> fetch(Long postId, List<Long> excludeIds, int limit);
+    }
+
+
 }

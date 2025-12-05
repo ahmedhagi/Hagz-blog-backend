@@ -55,7 +55,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     /**
      * Find related post IDs only (for two-step fetch to avoid GROUP BY conflicts)
-     * Step 1: Get IDs sorted by relevance
+     * Step 1: Get IDs sorted by relevance based on shared tags
      */
     @Query("SELECT p.id FROM Post p " +
             "JOIN p.tags t " +
@@ -71,7 +71,31 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                                         Pageable pageable);
 
     /**
-     * Step 2: Fetch full posts with all associations loaded
+     * Find related post IDs by same topic excluding already collected IDs
+     * Used as fallback when tag matches are insufficient
+     */
+    @Query("SELECT p.id FROM Post p " +
+            "WHERE p.topic.id = (" +
+            "  SELECT p2.topic.id FROM Post p2 WHERE p2.id = :postId" +
+            ") " +
+            "AND p.id NOT IN :excludeIds " +
+            "ORDER BY p.createdOn DESC")
+    List<Long> findRelatedPostIdsByTopicExcluding(@Param("postId") Long postId,
+                                                  @Param("excludeIds") List<Long> excludeIds,
+                                                  Pageable pageable);
+
+    /**
+     * Find recent post IDs excluding specified IDs (final fallback)
+     * Used to fill remaining slots when other methods don't return enough results
+     */
+    @Query("SELECT p.id FROM Post p " +
+            "WHERE p.id NOT IN :excludeIds " +
+            "ORDER BY p.createdOn DESC")
+    List<Long> findRecentPostIdsExcluding(@Param("excludeIds") List<Long> excludeIds,
+                                          Pageable pageable);
+
+    /**
+     * Fetch full posts with all associations loaded
      * Uses EntityGraph to avoid N+1 queries
      */
     @EntityGraph(attributePaths = {"comments", "tags", "topic"})
