@@ -41,9 +41,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "LEFT JOIN p.topic t " +
             "LEFT JOIN p.tags tag " +
             "LEFT JOIN p.comments c " +
-            "WHERE (:username IS NULL OR p.username = :username) " +
-            "AND (:topicName IS NULL OR t.name = :topicName) " +
-            "AND (:tagName IS NULL OR tag.name = :tagName) " +
+            "WHERE (:username IS NULL OR LOWER(p.username) = LOWER(:username)) " +
+            "AND (:topicName IS NULL OR LOWER(t.name) = LOWER(:topicName)) " +
+            "AND (:tagName IS NULL OR LOWER(tag.name) = LOWER(:tagName)) " +
             "GROUP BY p.id, p.slug, p.imageUrl, t.name, p.shortDesc, p.username, p.createdOn " +
             "ORDER BY p.createdOn DESC")
     Page<PostCardDTO> findPostCardsWithFilters(
